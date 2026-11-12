@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="EquipmentTrackerDotNet.Api/EquipmentTrackerDotNet.Api.csproj" />
+  <Project Path="EquipmentTrackerDotNet.Tests/EquipmentTrackerDotNet.Tests.csproj" />
+  <Project Path="EquipmentTrackerDotNet.Web/EquipmentTrackerDotNet.Web.csproj" />
+</Solution>
