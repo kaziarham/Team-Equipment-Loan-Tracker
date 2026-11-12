@@ -1,0 +1,63 @@
+@page "/equipment"
+@inject EquipmentApiClient Api
+
+<PageTitle>Equipment</PageTitle>
+
+<h1>Equipment</h1>
+
+@if (_loading)
+{
+    <p>Loading equipment...</p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-danger">@_error</div>
+}
+else if (_items.Count == 0)
+{
+    <p>No equipment found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Serial number</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _items)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Category</td>
+                    <td>@(item.SerialNumber ?? "-")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<EquipmentDto> _items = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _items = await Api.GetEquipmentAsync();
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Could not load equipment. Check that the API is running.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
