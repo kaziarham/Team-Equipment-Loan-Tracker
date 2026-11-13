@@ -15,8 +15,15 @@ Requires the .NET 10 SDK. From the `EquipmentTrackerDotNet` folder:
 
 ```bash
 dotnet restore
+dotnet tool restore
 dotnet build
 dotnet test
+```
+
+Create the local database once, before the first run. From the `EquipmentTrackerDotNet.Api` folder:
+
+```bash
+dotnet ef database update
 ```
 
 Start the API and the Web app in separate terminals:
@@ -28,4 +35,4 @@ cd EquipmentTrackerDotNet/EquipmentTrackerDotNet.Web && dotnet run
 
 Then open `http://localhost:5072/equipment`. The Web app reads the API address from `ApiBaseUrl` in `appsettings.json`.
 
-Equipment data is currently held in memory and resets when the API restarts.
+Equipment data is stored in `equipment.db` in the API folder, so it survives restarts. This file is git-ignored. The tests use their own temporary database and do not touch it.

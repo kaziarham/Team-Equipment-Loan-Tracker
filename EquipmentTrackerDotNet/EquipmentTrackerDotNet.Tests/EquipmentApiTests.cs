@@ -1,10 +1,9 @@
 using System.Net.Http.Json;
 using EquipmentTrackerDotNet.Api.Contracts;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace EquipmentTrackerDotNet.Tests;
 
-public class EquipmentApiTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class EquipmentApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     [Fact]
     public async Task GetEquipment_ReturnsSeededItems()
@@ -14,6 +13,6 @@ public class EquipmentApiTests(WebApplicationFactory<Program> factory) : IClassF
         var items = await client.GetFromJsonAsync<List<EquipmentDto>>("/api/equipment");
 
         Assert.NotNull(items);
-        Assert.Contains(items, item => item.Name == "Dell XPS 13" && item.Category == "Laptop");
+        Assert.Contains(items, item => item.Name == "Laptop 14in" && item.Category == "Computer");
     }
 }
