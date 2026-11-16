@@ -1,4 +1,4 @@
-# Team-Equipment-Loan-Tracker
+# Team Equipment Loan Tracker
 Web application for tracking team equipment such as laptops, monitors and headsets: what is available, who has borrowed it, and when it is due back.
 
 ## Projects
@@ -26,11 +26,11 @@ Create the local database once, before the first run. From the `EquipmentTracker
 dotnet ef database update
 ```
 
-Start the API and the Web app in separate terminals:
+Start the API and the Web app in separate terminals, each from the `EquipmentTrackerDotNet` folder:
 
 ```bash
-cd EquipmentTrackerDotNet/EquipmentTrackerDotNet.Api && dotnet run
-cd EquipmentTrackerDotNet/EquipmentTrackerDotNet.Web && dotnet run
+cd EquipmentTrackerDotNet.Api && dotnet run
+cd EquipmentTrackerDotNet.Web && dotnet run
 ```
 
 Then open `http://localhost:5072/equipment`. The Web app reads the API address from `ApiBaseUrl` in `appsettings.json`.

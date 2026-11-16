@@ -1,0 +1,126 @@
+@page "/equipment/new"
+@page "/equipment/{Id:int}/edit"
+@inject EquipmentApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>@_title</PageTitle>
+
+<h1>@_title</h1>
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else if (_notFound)
+{
+    <div class="alert alert-warning">
+        This equipment item no longer exists. <a href="/equipment">Back to the list</a>
+    </div>
+}
+else
+{
+    @if (_error is not null)
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    <EditForm Model="_form" OnValidSubmit="SaveAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control" @bind-Value="_form.Name" />
+            <ValidationMessage For="() => _form.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <InputText class="form-control" @bind-Value="_form.Category" />
+            <ValidationMessage For="() => _form.Category" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Serial number (optional)</label>
+            <InputText class="form-control" @bind-Value="_form.SerialNumber" />
+            <ValidationMessage For="() => _form.SerialNumber" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@_saving">
+            @(_saving ? "Saving..." : "Save")
+        </button>
+        <a href="/equipment" class="btn btn-secondary">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private readonly EquipmentForm _form = new();
+    private bool _loading = true;
+    private bool _saving;
+    private bool _notFound;
+    private string? _error;
+
+    private string _title => Id is null ? "Add equipment" : "Edit equipment";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (Id is int id)
+            {
+                var item = await Api.GetEquipmentByIdAsync(id);
+                if (item is null)
+                {
+                    _notFound = true;
+                    return;
+                }
+
+                _form.Name = item.Name;
+                _form.Category = item.Category;
+                _form.SerialNumber = item.SerialNumber;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Could not load this item. Check that the API is running.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+
+        try
+        {
+            if (Id is int id)
+            {
+                if (!await Api.UpdateEquipmentAsync(id, _form))
+                {
+                    _notFound = true;
+                    return;
+                }
+            }
+            else
+            {
+                await Api.CreateEquipmentAsync(_form);
+            }
+
+            Navigation.NavigateTo("/equipment");
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Could not save. Check that the API is running and try again.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

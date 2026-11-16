@@ -5,6 +5,8 @@
 
 <h1>Equipment</h1>
 
+<a href="/equipment/new" class="btn btn-primary mb-3">Add equipment</a>
+
 @if (_loading)
 {
     <p>Loading equipment...</p>
@@ -25,6 +27,7 @@ else
                 <th>Name</th>
                 <th>Category</th>
                 <th>Serial number</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +37,7 @@ else
                     <td>@item.Name</td>
                     <td>@item.Category</td>
                     <td>@(item.SerialNumber ?? "-")</td>
+                    <td><a href="/equipment/@item.Id/edit">Edit</a></td>
                 </tr>
             }
         </tbody>
