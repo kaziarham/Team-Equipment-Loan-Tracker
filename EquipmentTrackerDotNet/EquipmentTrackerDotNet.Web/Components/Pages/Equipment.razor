@@ -36,7 +36,7 @@ else
                 <tr>
                     <td>@item.Name</td>
                     <td>@item.Category</td>
-                    <td>@(item.SerialNumber ?? "-")</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.SerialNumber) ? "-" : item.SerialNumber)</td>
                     <td><a href="/equipment/@item.Id/edit">Edit</a></td>
                 </tr>
             }
