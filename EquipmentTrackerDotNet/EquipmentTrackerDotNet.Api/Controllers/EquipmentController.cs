@@ -6,7 +6,7 @@ namespace EquipmentTrackerDotNet.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EquipmentController(EquipmentService service, LoanService loanService) : ControllerBase
+public class EquipmentController(EquipmentService equipmentService, LoanService loanService) : ControllerBase
 {
     private static readonly string[] StatusFilters = ["available", "onloan", "overdue"];
 
@@ -18,26 +18,26 @@ public class EquipmentController(EquipmentService service, LoanService loanServi
             return BadRequest("status must be available, onloan or overdue.");
         }
 
-        return Ok(await service.GetAllAsync(status, cancellationToken));
+        return Ok(await equipmentService.GetAllAsync(status, cancellationToken));
     }
     
     [HttpGet("{id:int}")]
     public async Task<ActionResult<EquipmentDto>> GetById(int id, CancellationToken cancellationToken)
     {
-        var item = await service.GetByIdAsync(id, cancellationToken);
+        var item = await equipmentService.GetByIdAsync(id, cancellationToken);
         return item is null ? NotFound() : Ok(item);
     }
 
     [HttpPost]
     public async Task<ActionResult<EquipmentDto>> Create(EquipmentRequest request, CancellationToken cancellationToken)
     {
-        var created = await service.CreateAsync(request, cancellationToken);
+        var created = await equipmentService.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, EquipmentRequest request, CancellationToken cancellationToken) =>
-        await service.UpdateAsync(id, request, cancellationToken) ? NoContent() : NotFound();
+        await equipmentService.UpdateAsync(id, request, cancellationToken) ? NoContent() : NotFound();
     
     [HttpPost("{id:int}/loans")]
     public async Task<IActionResult> Borrow(int id, BorrowRequest request, CancellationToken cancellationToken)
