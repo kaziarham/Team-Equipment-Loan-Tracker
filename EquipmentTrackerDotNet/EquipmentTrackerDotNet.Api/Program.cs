@@ -10,6 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<EquipmentService>();
+builder.Services.AddScoped<LoanService>();
+builder.Services.AddSingleton(TimeProvider.System);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

@@ -6,11 +6,20 @@ namespace EquipmentTrackerDotNet.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EquipmentController(EquipmentService service) : ControllerBase
+public class EquipmentController(EquipmentService service, LoanService loanService) : ControllerBase
 {
+    private static readonly string[] StatusFilters = ["available", "onloan", "overdue"];
+
     [HttpGet]
-    public async Task<ActionResult<List<EquipmentDto>>> GetAll(CancellationToken cancellationToken) =>
-        Ok(await service.GetAllAsync(cancellationToken));
+    public async Task<ActionResult<List<EquipmentListItemDto>>> GetAll([FromQuery] string? status, CancellationToken cancellationToken)
+    {
+        if (status is not null && !StatusFilters.Contains(status))
+        {
+            return BadRequest("status must be available, onloan or overdue.");
+        }
+
+        return Ok(await service.GetAllAsync(status, cancellationToken));
+    }
     
     [HttpGet("{id:int}")]
     public async Task<ActionResult<EquipmentDto>> GetById(int id, CancellationToken cancellationToken)
@@ -29,4 +38,19 @@ public class EquipmentController(EquipmentService service) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, EquipmentRequest request, CancellationToken cancellationToken) =>
         await service.UpdateAsync(id, request, cancellationToken) ? NoContent() : NotFound();
+    
+    [HttpPost("{id:int}/loans")]
+    public async Task<IActionResult> Borrow(int id, BorrowRequest request, CancellationToken cancellationToken)
+    {
+        var result = await loanService.BorrowAsync(id, request, cancellationToken);
+
+        return result.Status switch
+        {
+            LoanStatus.Created => Created($"/api/equipment/{id}", result.Loan),
+            LoanStatus.NotFound => NotFound(),
+            LoanStatus.AlreadyOnLoan => Conflict("This item is already on loan."),
+            LoanStatus.DueDateInPast => BadRequest("The due date cannot be in the past."),
+            _ => throw new InvalidOperationException($"Unexpected loan status {result.Status}.")
+        };
+    }
 }

@@ -20,7 +20,7 @@ dotnet build
 dotnet test
 ```
 
-Create the local database once, before the first run. From the `EquipmentTrackerDotNet.Api` folder:
+Create or update the local database. Run this before the first start and again after pulling new migrations. From the `EquipmentTrackerDotNet.Api` folder:
 
 ```bash
 dotnet ef database update
@@ -36,3 +36,5 @@ cd EquipmentTrackerDotNet.Web && dotnet run
 Then open `http://localhost:5072/equipment`. The Web app reads the API address from `ApiBaseUrl` in `appsettings.json`.
 
 Equipment data is stored in `equipment.db` in the API folder, so it survives restarts. This file is git-ignored. The tests use their own temporary database and do not touch it.
+
+On a new database, the seed data includes one overdue loan (the Projector), so you can see the Overdue filter straight away.

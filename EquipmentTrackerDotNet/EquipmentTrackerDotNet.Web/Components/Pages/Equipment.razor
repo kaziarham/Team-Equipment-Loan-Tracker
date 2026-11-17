@@ -1,4 +1,5 @@
 @page "/equipment"
+@using System.Net
 @inject EquipmentApiClient Api
 
 <PageTitle>Equipment</PageTitle>
@@ -7,13 +8,21 @@
 
 <a href="/equipment/new" class="btn btn-primary mb-3">Add equipment</a>
 
+<div class="btn-group mb-3 ms-2" role="group">
+    @foreach (var (value, label) in Filters)
+    {
+        <button type="button" class="btn @(_filter == value ? "btn-dark" : "btn-outline-dark")" @onclick="() => SetFilterAsync(value)">@label</button>
+    }
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert alert-danger">@_error</div>
+}
+
 @if (_loading)
 {
     <p>Loading equipment...</p>
-}
-else if (_error is not null)
-{
-    <div class="alert alert-danger">@_error</div>
 }
 else if (_items.Count == 0)
 {
@@ -27,6 +36,7 @@ else
                 <th>Name</th>
                 <th>Category</th>
                 <th>Serial number</th>
+                <th>Availability</th>
                 <th></th>
             </tr>
         </thead>
@@ -37,7 +47,36 @@ else
                     <td>@item.Name</td>
                     <td>@item.Category</td>
                     <td>@(string.IsNullOrWhiteSpace(item.SerialNumber) ? "-" : item.SerialNumber)</td>
-                    <td><a href="/equipment/@item.Id/edit">Edit</a></td>
+                    <td>
+                        @if (item.IsOverdue)
+                        {
+                            <span class="badge bg-danger">Overdue</span>
+                        }
+                        else if (item.ActiveLoan is null)
+                        {
+                            <span class="badge bg-success">Available</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">On loan</span>
+                        }
+
+                        @if (item.ActiveLoan is not null)
+                        {
+                            <small class="ms-1">@item.ActiveLoan.BorrowerName, due @item.ActiveLoan.DueDate</small>
+                        }
+                    </td>
+                    <td>
+                        <a href="/equipment/@item.Id/edit">Edit</a>
+                        @if (item.ActiveLoan is null)
+                        {
+                            <a href="/equipment/@item.Id/borrow" class="ms-2">Borrow</a>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" disabled="@_busy" @onclick="() => ReturnAsync(item.ActiveLoan!.Id)">Return</button>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
@@ -45,15 +84,36 @@ else
 }
 
 @code {
-    private List<EquipmentDto> _items = [];
+    private static readonly (string? Value, string Label)[] Filters =
+    [
+        (null, "All"),
+        ("available", "Available"),
+        ("onloan", "On loan"),
+        ("overdue", "Overdue")
+    ];
+
+    private List<EquipmentListItem> _items = [];
+    private string? _filter;
     private bool _loading = true;
+    private bool _busy;
     private string? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private Task SetFilterAsync(string? filter)
     {
+        _filter = filter;
+        return LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+
         try
         {
-            _items = await Api.GetEquipmentAsync();
+            _items = await Api.GetEquipmentAsync(_filter);
+            _error = null;
         }
         catch (HttpRequestException)
         {
@@ -62,6 +122,30 @@ else
         finally
         {
             _loading = false;
+        }
+    }
+
+    private async Task ReturnAsync(int loanId)
+    {
+        _busy = true;
+
+        try
+        {
+            var status = await Api.ReturnAsync(loanId);
+            await LoadAsync();
+
+            if (status != HttpStatusCode.OK)
+            {
+                _error = "Could not return this item. It may already have been returned.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Could not return this item. Check that the API is running.";
+        }
+        finally
+        {
+            _busy = false;
         }
     }
 }

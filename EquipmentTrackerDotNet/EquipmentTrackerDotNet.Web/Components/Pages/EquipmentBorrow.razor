@@ -1,0 +1,112 @@
+@page "/equipment/{Id:int}/borrow"
+@using System.Net
+@inject EquipmentApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Borrow equipment</PageTitle>
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else if (_item is null)
+{
+    <div class="alert alert-warning">
+        This equipment item no longer exists. <a href="/equipment">Back to the list.</a>
+    </div>
+}
+else
+{
+    <h1>Borrow @_item.Name</h1>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    <EditForm Model="_form" OnValidSubmit="SaveAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="mb-3">
+            <label class="form-label">Borrower name</label>
+            <InputText class="form-control" @bind-Value="_form.BorrowerName" />
+            <ValidationMessage For="() => _form.BorrowerName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Due date</label>
+            <InputDate class="form-control" @bind-Value="_form.DueDate" />
+            <ValidationMessage For="() => _form.DueDate" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@_saving">
+            @(_saving ? "Saving..." : "Borrow")
+        </button>
+        <a href="/equipment" class="btn btn-secondary">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private readonly BorrowForm _form = new();
+    private EquipmentDto? _item;
+    private bool _loading = true;
+    private bool _saving;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _item = await Api.GetEquipmentByIdAsync(Id);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Could not load this item. Check that the API is running.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_form.DueDate < DateOnly.FromDateTime(DateTime.Today))
+        {
+            _error = "The due date cannot be in the past.";
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+
+        try
+        {
+            var status = await Api.BorrowAsync(Id, _form);
+            if (status == HttpStatusCode.Created)
+            {
+                Navigation.NavigateTo("/equipment");
+                return;
+            }
+
+            _error = status switch
+            {
+                HttpStatusCode.Conflict => "This item is already on loan.",
+                HttpStatusCode.NotFound => "This equipment item no longer exists.",
+                HttpStatusCode.BadRequest => "The due date cannot be in the past.",
+                _ => "Could not record the loan. Please try again."
+            };
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Could not record the loan. Check that the API is running.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}
