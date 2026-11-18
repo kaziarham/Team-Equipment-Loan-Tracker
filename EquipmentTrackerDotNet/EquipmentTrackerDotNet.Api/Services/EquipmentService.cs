@@ -15,7 +15,7 @@ public class EquipmentService(AppDbContext db, TimeProvider timeProvider)
         IQueryable<Equipment> query = db.Equipment
             .AsNoTracking()
             .Include(equipment => equipment.Loans.Where(loan => loan.ReturnedDate == null));
-        
+
         query = status switch
         {
             "available" => query.Where(e => !e.Loans.Any(l => l.ReturnedDate == null)),
@@ -27,14 +27,14 @@ public class EquipmentService(AppDbContext db, TimeProvider timeProvider)
         var items = await query.OrderBy(e => e.Id).ToListAsync(cancellationToken);
         return items.Select(e => ToListItem(e, today)).ToList();
     }
-    
+
     public async Task<EquipmentDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
         await db.Equipment
             .AsNoTracking()
             .Where(equipment => equipment.Id == id)
             .Select(equipment => new EquipmentDto(equipment.Id, equipment.Name, equipment.Category, equipment.SerialNumber))
             .FirstOrDefaultAsync(cancellationToken);
-    
+
     public async Task<EquipmentDto> CreateAsync(EquipmentRequest request, CancellationToken cancellationToken = default)
     {
         var entity = new Equipment

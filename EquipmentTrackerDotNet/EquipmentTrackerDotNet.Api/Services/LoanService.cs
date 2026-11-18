@@ -49,7 +49,7 @@ public class LoanService(AppDbContext db, TimeProvider timeProvider)
         };
 
         db.Loans.Add(loan);
-        
+
         try
         {
             await db.SaveChangesAsync(cancellationToken);

@@ -31,12 +31,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(l => l.Equipment)
                   .WithMany(e => e.Loans)
                   .HasForeignKey(l => l.EquipmentId);
-            
+
             // At most one active (not returned) loan per item.
             entity.HasIndex(l => l.EquipmentId)
                   .IsUnique()
                   .HasFilter("ReturnedDate IS NULL");
-            
+
             // Seeded overdue loan for the demonstration: Projector due well before today.
             entity.HasData(new Loan
             {

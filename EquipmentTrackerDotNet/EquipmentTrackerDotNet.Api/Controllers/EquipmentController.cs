@@ -20,7 +20,7 @@ public class EquipmentController(EquipmentService equipmentService, LoanService 
 
         return Ok(await equipmentService.GetAllAsync(status, cancellationToken));
     }
-    
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<EquipmentDto>> GetById(int id, CancellationToken cancellationToken)
     {
@@ -38,7 +38,7 @@ public class EquipmentController(EquipmentService equipmentService, LoanService 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, EquipmentRequest request, CancellationToken cancellationToken) =>
         await equipmentService.UpdateAsync(id, request, cancellationToken) ? NoContent() : NotFound();
-    
+
     [HttpPost("{id:int}/loans")]
     public async Task<IActionResult> Borrow(int id, BorrowRequest request, CancellationToken cancellationToken)
     {

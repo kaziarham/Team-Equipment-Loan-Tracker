@@ -71,7 +71,7 @@ public class LoanApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
     public async Task Borrow_WithWhiteSpaceBorrowerName_Returns400()
     {
         var id = await CreateEquipmentAsync();
-        
+
         var response = await _client.PostAsJsonAsync($"/api/equipment/{id}/loans", new BorrowRequest("   ", DateOnly.FromDateTime(DateTime.UtcNow).AddDays(7)));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
