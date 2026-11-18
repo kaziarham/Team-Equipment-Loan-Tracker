@@ -74,12 +74,6 @@ else
 
     private async Task SaveAsync()
     {
-        if (_form.DueDate < DateOnly.FromDateTime(DateTime.Today))
-        {
-            _error = "The due date cannot be in the past.";
-            return;
-        }
-
         _saving = true;
         _error = null;
 
@@ -96,7 +90,7 @@ else
             {
                 HttpStatusCode.Conflict => "This item is already on loan.",
                 HttpStatusCode.NotFound => "This equipment item no longer exists.",
-                HttpStatusCode.BadRequest => "The due date cannot be in the past.",
+                HttpStatusCode.BadRequest => "Check the borrower name and due date. The due date cannot be in the past.",
                 _ => "Could not record the loan. Please try again."
             };
         }

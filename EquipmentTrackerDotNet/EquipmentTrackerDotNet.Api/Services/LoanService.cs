@@ -56,8 +56,13 @@ public class LoanService(AppDbContext db, TimeProvider timeProvider)
         }
         catch (DbUpdateException)
         {
-            // The filtered unique index rejects a second active loan if two requests race.
-            return new LoanResult(LoanStatus.AlreadyOnLoan);
+            // If another request won the race, the item is now on loan. Otherwise this is a different failure.
+            if (await db.Loans.AnyAsync(l => l.EquipmentId == equipmentId && l.ReturnedDate == null, cancellationToken))
+            {
+                return new LoanResult(LoanStatus.AlreadyOnLoan);
+            }
+
+            throw;
         }
 
         return new LoanResult(LoanStatus.Created, LoanDto.From(loan));

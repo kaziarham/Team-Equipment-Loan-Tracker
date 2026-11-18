@@ -67,6 +67,28 @@ public class LoanApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         Assert.True(projector.IsOverdue);
     }
 
+    [Fact]
+    public async Task Borrow_WithWhiteSpaceBorrowerName_Returns400()
+    {
+        var id = await CreateEquipmentAsync();
+        
+        var response = await _client.PostAsJsonAsync($"/api/equipment/{id}/loans", new BorrowRequest("   ", DateOnly.FromDateTime(DateTime.UtcNow).AddDays(7)));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Borrow_AfterReturn_Returns201()
+    {
+        var id = await CreateEquipmentAsync();
+        var loan = await (await BorrowAsync(id)).Content.ReadFromJsonAsync<LoanDto>();
+        await _client.PostAsync($"/api/loans/{loan!.Id}/return", null);
+
+        var second = await BorrowAsync(id);
+
+        Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+    }
+
     private async Task<int> CreateEquipmentAsync()
     {
         var response = await _client.PostAsJsonAsync("/api/equipment", new EquipmentRequest($"Item {Guid.NewGuid():N}", "Tools", null));
