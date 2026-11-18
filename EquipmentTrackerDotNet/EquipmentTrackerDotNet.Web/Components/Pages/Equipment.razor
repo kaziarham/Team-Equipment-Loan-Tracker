@@ -67,10 +67,10 @@ else
                         }
                     </td>
                     <td>
-                        <a href="/equipment/@item.Id/edit">Edit</a>
+                        <a href="/equipment/@item.Id/edit" class="btn btn-sm btn-outline-primary">Edit</a>
                         @if (item.ActiveLoan is null)
                         {
-                            <a href="/equipment/@item.Id/borrow" class="ms-2">Borrow</a>
+                            <a href="/equipment/@item.Id/borrow" class="btn btn-sm btn-outline-primary ms-2">Borrow</a>
                         }
                         else
                         {
