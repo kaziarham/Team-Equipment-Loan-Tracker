@@ -1,4 +1,4 @@
-export default function EquipmentList({ items }) {
+function EquipmentList({ items }) {
     if (items.length === 0) {
         return <p>No equipment yet.</p>
     }
@@ -24,3 +24,5 @@ export default function EquipmentList({ items }) {
         </table>
     )
 }
+
+export default EquipmentList;
