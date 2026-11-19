@@ -11,7 +11,9 @@ CREATE TABLE loan (
     borrower_name VARCHAR(255) NOT NULL,
     loan_date DATE NOT NULL,
     due_date DATE NOT NULL,
-    returned_date DATE,
-    FOREIGN KEY (equipment_id) REFERENCES equipment(id),
-    UNIQUE (equipment_id) WHERE returned_date IS NULL
+    returned_date DATE
 );
+
+CREATE UNIQUE INDEX loan_one_active_per_equipment
+    ON loan (equipment_id)
+    WHERE returned_date IS NULL;
