@@ -54,7 +54,7 @@ class EquipmentApiIntegrationTests {
     void rejectsInvalidInputWithBadRequest() {
         var response = client.post().uri("/api/equipment")
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new EquipmentRequest(" ", "null", null))
+            .body(new EquipmentRequest(" ", "", null))
             .retrieve()
             .onStatus(HttpStatusCode::isError, (req, res) -> { })
             .toBodilessEntity();
