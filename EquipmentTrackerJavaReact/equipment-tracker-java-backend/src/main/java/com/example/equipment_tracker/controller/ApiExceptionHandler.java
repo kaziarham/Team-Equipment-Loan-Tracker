@@ -3,7 +3,6 @@ package com.example.equipment_tracker.controller;
 import com.example.equipment_tracker.service.EquipmentNotFoundException;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.validation.FieldError;
