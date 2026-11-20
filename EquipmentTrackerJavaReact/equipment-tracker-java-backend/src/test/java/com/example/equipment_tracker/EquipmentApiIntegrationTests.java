@@ -52,14 +52,12 @@ class EquipmentApiIntegrationTests {
 
     @Test
     void rejectsInvalidInputWithBadRequest() {
-        var response = client.post().uri("/api/equipment")
+        HttpStatusCode status = client.post().uri("/api/equipment")
             .contentType(MediaType.APPLICATION_JSON)
             .body(new EquipmentRequest(" ", "", null))
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, (req, res) -> { })
-            .toBodilessEntity();
+            .exchange((request, response) -> response.getStatusCode());
         
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(equipmentRepository.count()).isZero();
     }
 
@@ -80,11 +78,9 @@ class EquipmentApiIntegrationTests {
 
     @Test
     void returnsNotFoundForMissingEquipment() {
-        var response = client.get().uri("/api/equipment/{id}", 999_999L)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, (req, res) -> { })
-            .toBodilessEntity();
+        HttpStatusCode status = client.get().uri("/api/equipment/{id}", 999_999L)
+            .exchange((request, response) -> response.getStatusCode());
         
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(status).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

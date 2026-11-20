@@ -5,7 +5,6 @@ import com.example.equipment_tracker.dto.EquipmentResponse;
 import com.example.equipment_tracker.entity.Equipment;
 import com.example.equipment_tracker.repository.EquipmentRepository;
 import java.util.List;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +18,7 @@ public class EquipmentService {
     }
 
     public List<EquipmentResponse> findAll() {
-        return equipmentRepository.findAll(Sort.by("id")).stream()
+        return equipmentRepository.findAllByOrderByIdAsc().stream()
             .map(EquipmentService::toResponse)
             .toList();
     }
