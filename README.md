@@ -81,6 +81,8 @@ curl -i -X POST http://localhost:5209/api/equipment \
   -d '{"name":"Canon EOS R6","category":"Camera","serialNumber":"CAM-001"}'
 ```
 
+You can also send the same request from [Insomnia](https://insomnia.rest/) or [Postman](https://www.postman.com/): use `POST`, set the URL to `http://localhost:5209/api/equipment`, and in the body choose JSON with the same fields.
+
 ### Running the applications
 
 Start the API first, then the Web app. Each runs in its own terminal from the `EquipmentTrackerDotNet` folder:
@@ -222,6 +224,8 @@ curl -i -X POST http://localhost:8080/api/equipment \
   -H 'Content-Type: application/json' \
   -d '{"name":"Canon EOS R6","category":"Camera","serialNumber":"CAM-001"}'
 ```
+
+You can also send the same request from [Insomnia](https://insomnia.rest/) or [Postman](https://www.postman.com/): use `POST`, set the URL to `http://localhost:8080/api/equipment`, and in the body choose JSON with the same fields.
 
 To see the new row, open the `equipment_tracker` database in [pgAdmin](https://www.pgadmin.org/) or DBeaver and run the `SELECT` query from the section above.
 
