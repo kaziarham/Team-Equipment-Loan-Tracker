@@ -58,6 +58,29 @@ If you see a "no such table" error, run `dotnet ef database update` again.
 - **Web app's API address:** `ApiBaseUrl` in `EquipmentTrackerDotNet.Web/appsettings.json`. If you change the API port, update this value too.
 - **Database location:** `ConnectionStrings:Default` in `EquipmentTrackerDotNet.Api/appsettings.json`.
 
+### API endpoints
+
+The Web app calls these endpoints on `http://localhost:5209`.
+
+| Method | Endpoint | Response |
+|---|---|---|
+| GET | `/api/equipment` | `200 OK` with all equipment. Optional `?status=available`, `onloan` or `overdue`. Any other value returns `400 Bad Request`. |
+| GET | `/api/equipment/{id}` | `200 OK`, or `404 Not Found` |
+| POST | `/api/equipment` | `201 Created` with the new item, or `400 Bad Request` for invalid input |
+| PUT | `/api/equipment/{id}` | `204 No Content`, `400 Bad Request` for invalid input, or `404 Not Found` |
+| POST | `/api/equipment/{id}/loans` | `201 Created` with the loan, `400 Bad Request` if the due date is in the past, `404 Not Found`, or `409 Conflict` if the item is already on loan |
+| POST | `/api/loans/{id}/return` | `200 OK` with the loan, `404 Not Found`, or `409 Conflict` if the loan was already returned |
+
+Borrow request body: `{ "borrowerName": "...", "dueDate": "YYYY-MM-DD" }`. The name cannot be blank.
+
+Create an item from a terminal:
+
+```bash
+curl -i -X POST http://localhost:5209/api/equipment \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Canon EOS R6","category":"Camera","serialNumber":"CAM-001"}'
+```
+
 ### Running the applications
 
 Start the API first, then the Web app. Each runs in its own terminal from the `EquipmentTrackerDotNet` folder:
@@ -96,7 +119,7 @@ The tests start the API in memory with a temporary SQLite database. They don't n
 
 ## Java + React version
 
-The Java + React implementation is in [EquipmentTrackerJavaReact/](EquipmentTrackerJavaReact/):
+The Java + React solution is in [EquipmentTrackerJavaReact/](EquipmentTrackerJavaReact/):
 
 - `equipment-tracker-java-backend`: Spring Boot API (Java 21), runs at `http://localhost:8080`.
 - `equipment-tracker-react-frontend`: React with Vite, runs at `http://localhost:5173`.
@@ -107,10 +130,11 @@ The browser talks only to the Vite dev server, which forwards `/api` requests to
 
 - **JDK 21**, not just a runtime. Check it with `java -version` and `javac -version`.
 - **Node.js 24 LTS** with npm. Check it with `node --version` and `npm --version`.
-- **PostgreSQL** with `psql`. Check it with `psql --version`.
+- **PostgreSQL 18** (developed and tested with 18.4), with `psql`. Check it with `psql --version`.
 - **Git**.
 - A modern browser with developer tools, used to inspect requests and console errors.
 - An editor, optional: VS Code with the Extension Pack for Java and the Spring Boot Extension Pack, or IntelliJ IDEA. Its built-in JavaScript support covers the React side.
+- Optional: [pgAdmin](https://www.pgadmin.org/) or DBeaver to inspect tables and run SQL visually.
 
 Not required: Docker, a global Maven install (the Maven Wrapper is included), or a cloud subscription.
 
@@ -125,6 +149,8 @@ createdb --owner=equipment_tracker equipment_tracker_test
 ```
 
 Enter a password at the `--pwprompt` prompt. An empty password won't work with the backend.
+
+`equipment_tracker` is the application database. `equipment_tracker_test` is used only by the backend tests, which clean their records between runs, so never point the tests at the application database.
 
 ### Configuration
 
@@ -159,24 +185,56 @@ curl -i http://localhost:5173/api/equipment
 
 A `200 OK` response with a JSON array means the frontend can reach the backend.
 
-### Database migrations and inspection
+### Database migrations and persistence
 
-Flyway runs the SQL migrations in `equipment-tracker-java-backend/src/main/resources/db/migration` when the backend starts. To inspect the data:
+Flyway runs the SQL migrations in `equipment-tracker-java-backend/src/main/resources/db/migration` when the backend starts. Hibernate only validates the schema (`spring.jpa.hibernate.ddl-auto=validate`); Flyway owns all schema changes.
+
+| Migration | Purpose |
+|---|---|
+| `V1__create_equipment_and_loan_tables.sql` | Creates the `equipment` and `loan` tables and the partial unique index for active loans. |
+| `V2__add_loan_equipment_foreign_key.sql` | Adds the foreign key from `loan.equipment_id` to `equipment.id`. |
+
+Equipment data is stored in PostgreSQL and survives backend restarts. To inspect saved records:
 
 ```bash
 psql -h localhost -U equipment_tracker -d equipment_tracker -W
 ```
 
-The equipment list is currently served from an in-memory list in `EquipmentService`. Database persistence is the next step.
+```sql
+SELECT id, name, category, serial_number FROM equipment ORDER BY id;
+```
+
+### API endpoints
+
+| Method | Endpoint | Response |
+|---|---|---|
+| GET | `/api/equipment` | `200 OK` with all equipment, ordered by ID |
+| GET | `/api/equipment/{id}` | `200 OK`, or `404 Not Found` |
+| POST | `/api/equipment` | `201 Created` with a `Location` header, or `400 Bad Request` for invalid input |
+| PUT | `/api/equipment/{id}` | `200 OK`, `400 Bad Request` for invalid input, or `404 Not Found` |
+
+Invalid input returns a `ProblemDetail` body with an `errors` object that maps each field to its message.
+
+Create an item from a terminal:
+
+```bash
+curl -i -X POST http://localhost:8080/api/equipment \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Canon EOS R6","category":"Camera","serialNumber":"CAM-001"}'
+```
+
+To see the new row, open the `equipment_tracker` database in [pgAdmin](https://www.pgadmin.org/) or DBeaver and run the `SELECT` query from the section above.
 
 ### Running tests and checks
 
-From `equipment-tracker-java-backend`:
+From `equipment-tracker-java-backend`, with the `DB_*` variables set and the `equipment_tracker_test` database created:
 
 ```bash
 ./mvnw test
 ./mvnw verify
 ```
+
+The tests use the `test` profile (`src/test/resources/application-test.properties`), which points the datasource at `equipment_tracker_test`. The API integration tests send real HTTP requests to a random-port server and write to that database, so the application database is not touched.
 
 From `equipment-tracker-react-frontend`:
 
