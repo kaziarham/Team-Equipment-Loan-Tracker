@@ -25,4 +25,4 @@ function EquipmentList({ items }) {
     )
 }
 
-export default EquipmentList;
+export default EquipmentList
