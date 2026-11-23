@@ -14,7 +14,8 @@ The .NET solution is in [EquipmentTrackerDotNet/](EquipmentTrackerDotNet/):
 
 - `EquipmentTrackerDotNet.Api`: ASP.NET Core Web API, runs at `http://localhost:5209`.
 - `EquipmentTrackerDotNet.Web`: Blazor Web App, runs at `http://localhost:5072`.
-- `EquipmentTrackerDotNet.Tests`: xUnit tests.
+- `EquipmentTrackerDotNet.Tests`: xUnit tests for the API (integration tests plus a `LoanService` unit test).
+- `EquipmentTrackerDotNet.Web.Tests`: xUnit unit tests for the Web app's API client.
 
 ### Prerequisites
 
@@ -102,7 +103,7 @@ From the `EquipmentTrackerDotNet` folder:
 dotnet test
 ```
 
-The tests start the API in memory with a temporary SQLite database. They don't need the API to be running, and they don't change `equipment.db`.
+`dotnet test` runs every test project in `EquipmentTrackerDotNet.slnx`. The API tests start the API in memory with a temporary SQLite database. They don't need the API to be running, and they don't change `equipment.db`. The Web tests in `EquipmentTrackerDotNet.Web.Tests` check how the Web app's API client handles status codes, using a fake HTTP handler.
 
 ### Demo walkthrough
 
@@ -136,7 +137,7 @@ The browser talks only to the Vite dev server, which forwards `/api` requests to
 - **Git**.
 - A modern browser with developer tools, used to inspect requests and console errors.
 - An editor, optional: VS Code with the Extension Pack for Java and the Spring Boot Extension Pack, or IntelliJ IDEA. Its built-in JavaScript support covers the React side.
-- Optional: [pgAdmin](https://www.pgadmin.org/) or DBeaver to inspect tables and run SQL visually.
+- Optional: [pgAdmin](https://www.pgadmin.org/) or [DBeaver](https://dbeaver.io/) to inspect tables and run SQL visually.
 
 Not required: Docker, a global Maven install (the Maven Wrapper is included), or a cloud subscription.
 
@@ -239,6 +240,8 @@ From `equipment-tracker-java-backend`, with the `DB_*` variables set and the `eq
 ```
 
 The tests use the `test` profile (`src/test/resources/application-test.properties`), which points the datasource at `equipment_tracker_test`. The API integration tests send real HTTP requests to a random-port server and write to that database, so the application database is not touched.
+
+The service unit tests (`EquipmentServiceTests`) mock the repository and don't use the database. To run only them, use `./mvnw test -Dtest=EquipmentServiceTests`.
 
 From `equipment-tracker-react-frontend`:
 
