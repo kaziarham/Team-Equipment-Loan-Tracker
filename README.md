@@ -251,4 +251,4 @@ npm run lint
 npm run build
 ```
 
-`npm test` runs the Vitest suite in a jsdom environment. The tests mock the API with `fetch`, so they don't need the backend running.
+`npm run test` runs the Vitest suite in a jsdom environment. The tests mock the API with `fetch`, so they don't need the backend running.
