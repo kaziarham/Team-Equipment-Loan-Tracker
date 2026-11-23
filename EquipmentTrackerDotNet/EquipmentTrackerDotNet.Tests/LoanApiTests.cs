@@ -4,6 +4,9 @@ using EquipmentTrackerDotNet.Api.Contracts;
 
 namespace EquipmentTrackerDotNet.Tests;
 
+/**
+ * Integration tests for the Loan API.
+ */
 public class LoanApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();

@@ -3,6 +3,9 @@ using EquipmentTrackerDotNet.Api.Contracts;
 
 namespace EquipmentTrackerDotNet.Tests;
 
+/**
+ * Integration tests for the Equipment API.
+ */
 public class EquipmentApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     [Fact]
