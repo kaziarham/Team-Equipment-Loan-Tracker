@@ -26,9 +26,9 @@ class EquipmentServiceTests {
     void createTrimsFieldsAndStoresBlankSerialNumberAsNull() {
         EquipmentRepository equipmentRepository = mock(EquipmentRepository.class);
         when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> withId(invocation.getArgument(0), 1L));
-        EquipmentService equipmentService = new EquipmentService(equipmentRepository);
+        EquipmentService service = new EquipmentService(equipmentRepository);
 
-        EquipmentResponse response = equipmentService.create(new EquipmentRequest("  Canon EOS R6  ", "  Camera  ", "  "));
+        EquipmentResponse response = service.create(new EquipmentRequest("  Canon EOS R6  ", "  Camera  ", "  "));
 
         ArgumentCaptor<Equipment> captor = ArgumentCaptor.forClass(Equipment.class);
         verify(equipmentRepository).save(captor.capture());
@@ -43,9 +43,9 @@ class EquipmentServiceTests {
         EquipmentRepository equipmentRepository = mock(EquipmentRepository.class);
         Equipment existing = withId(new Equipment("Dell U2723QE", "Monitor", null), 1L);
         when(equipmentRepository.findById(1L)).thenReturn(Optional.of(existing));
-        EquipmentService equipmentService = new EquipmentService(equipmentRepository);
+        EquipmentService service = new EquipmentService(equipmentRepository);
 
-        EquipmentResponse response = equipmentService.update(1L, new EquipmentRequest("  Dell U2723QE 27in  ", "Monitor", "  MON-7  "));
+        EquipmentResponse response = service.update(1L, new EquipmentRequest("  Dell U2723QE 27in  ", "Monitor", "  MON-7  "));
 
         assertThat(existing.getName()).isEqualTo("Dell U2723QE 27in");
         assertThat(response.serialNumber()).isEqualTo("MON-7");
@@ -55,9 +55,9 @@ class EquipmentServiceTests {
     void updateThrowsWhenEquipmentDoesNotExist() {
         EquipmentRepository equipmentRepository = mock(EquipmentRepository.class);
         when(equipmentRepository.findById(42L)).thenReturn(Optional.empty());
-        EquipmentService equipmentService = new EquipmentService(equipmentRepository);
+        EquipmentService service = new EquipmentService(equipmentRepository);
 
-        assertThatThrownBy(() -> equipmentService.update(42L, new EquipmentRequest("Name", "Category", null)))
+        assertThatThrownBy(() -> service.update(42L, new EquipmentRequest("Name", "Category", null)))
             .isInstanceOf(EquipmentNotFoundException.class);
     }
 
@@ -65,9 +65,9 @@ class EquipmentServiceTests {
     void findAllMapsEntitiesToResponses() {
         EquipmentRepository equipmentRepository = mock(EquipmentRepository.class);
         when(equipmentRepository.findAllByOrderByIdAsc()).thenReturn(List.of(withId(new Equipment("Laptop", "Computer", "LAP-1"), 1L)));
-        EquipmentService equipmentService = new EquipmentService(equipmentRepository);
+        EquipmentService service = new EquipmentService(equipmentRepository);
 
-        List<EquipmentResponse> responses = equipmentService.findAll();
+        List<EquipmentResponse> responses = service.findAll();
 
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).name()).isEqualTo("Laptop");

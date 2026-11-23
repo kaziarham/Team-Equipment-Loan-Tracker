@@ -11,7 +11,7 @@ namespace EquipmentTrackerDotNet.Tests;
 public class LoanServiceTests
 {
     [Fact]
-    public async Task Borrow_WithDueDateBeforeToday_ReturnsDueDateInPast()
+    public async Task BorrowAsync_WithDueDateBeforeToday_ReturnsDueDateInPast()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=:memory:")
