@@ -246,8 +246,9 @@ The service unit tests (`EquipmentServiceTests`) mock the repository and don't u
 From `equipment-tracker-react-frontend`:
 
 ```bash
+npm run test
 npm run lint
 npm run build
 ```
 
-`npx vitest run` will be added once the frontend tests are configured.
+`npm test` runs the Vitest suite in a jsdom environment. The tests mock the API with `fetch`, so they don't need the backend running.
