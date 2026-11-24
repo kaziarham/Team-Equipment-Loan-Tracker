@@ -75,4 +75,4 @@ function EquipmentForm({ initialValues = emptyValues, submitting, serverError, o
     )
 }
 
-export default EquipmentForm;
+export default EquipmentForm
