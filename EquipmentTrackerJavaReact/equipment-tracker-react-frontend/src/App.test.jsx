@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 
@@ -51,5 +51,26 @@ describe('App equipment list', () => {
         )
 
         expect(await screen.findByText(/Request failed with status 500/)).toBeTruthy()
+    })
+
+    it('shows a visible error when saving new equipment fails', async () => {
+        vi.stubGlobal('fetch', vi.fn((url, options) => {
+            if (options?.method === 'POST') {
+                return Promise.resolve({ ok: false, status: 500, json: async () => ({}) })
+            }
+            return Promise.resolve({ ok: true, json: async () => [] })
+        }))
+
+        render(
+            <MemoryRouter initialEntries={['/equipment/new']}>
+                <App />
+            </MemoryRouter>
+        )
+
+        fireEvent.change(await screen.findByLabelText('Name'), { target: { value: 'Laptop' } })
+        fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Laptop' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+        expect(await screen.findByText(/Could not save equipment: Request failed with status 500/)).toBeTruthy()
     })
 })
