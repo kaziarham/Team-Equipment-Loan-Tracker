@@ -196,6 +196,7 @@ Flyway runs the SQL migrations in `equipment-tracker-java-backend/src/main/resou
 |---|---|
 | `V1__create_equipment_and_loan_tables.sql` | Creates the `equipment` and `loan` tables and the partial unique index for active loans. |
 | `V2__add_loan_equipment_foreign_key.sql` | Adds the foreign key from `loan.equipment_id` to `equipment.id`. |
+| `V3__seed_demo_equipment_and_loans.sql` | Adds four demo equipment items and loans, including two overdue, so the Overdue filter has data to show. |
 
 Equipment data is stored in PostgreSQL and survives backend restarts. To inspect saved records:
 
@@ -215,6 +216,8 @@ SELECT id, name, category, serial_number FROM equipment ORDER BY id;
 | GET | `/api/equipment/{id}` | `200 OK`, or `404 Not Found` |
 | POST | `/api/equipment` | `201 Created` with a `Location` header, or `400 Bad Request` for invalid input |
 | PUT | `/api/equipment/{id}` | `200 OK`, `400 Bad Request` for invalid input, or `404 Not Found` |
+| POST | `/api/equipment/{equipmentId}/loans` | `201 Created` with a `Location` header, `400 Bad Request` for invalid input, `404 Not Found` for unknown equipment, or `409 Conflict` if the equipment is already on loan |
+| POST | `/api/loans/{id}/return` | `200 OK`, `404 Not Found` for an unknown loan, or `409 Conflict` if it was already returned |
 
 Invalid input returns a `ProblemDetail` body with an `errors` object that maps each field to its message.
 
@@ -240,8 +243,6 @@ From `equipment-tracker-java-backend`, with the `DB_*` variables set and the `eq
 ```
 
 The tests use the `test` profile (`src/test/resources/application-test.properties`), which points the datasource at `equipment_tracker_test`. The API integration tests send real HTTP requests to a random-port server and write to that database, so the application database is not touched.
-
-The service unit tests (`EquipmentServiceTests`) mock the repository and don't use the database. To run only them, use `./mvnw test -Dtest=EquipmentServiceTests`.
 
 From `equipment-tracker-react-frontend`:
 

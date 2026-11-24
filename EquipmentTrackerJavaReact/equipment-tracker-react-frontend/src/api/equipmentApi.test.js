@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { fetchEquipment, createEquipment, updateEquipment } from './equipmentApi'
+import { fetchEquipment, createEquipment, updateEquipment, borrowEquipment, returnLoan } from './equipmentApi'
 
 /**
  * Unit tests for the Equipment API helpers (fetch is mocked)
@@ -53,9 +53,37 @@ describe('equipmentApi', () => {
         })
     })
 
+    it('borrowEquipment sends a POST to the equipment loans URL', async () => {
+        const loan = { borrowerName: 'Ana Pereira', dueDate: '2099-12-01' }
+        mockResponse({ id: 10, ...loan })
+
+        await borrowEquipment(7, loan)
+
+        expect(fetch).toHaveBeenCalledWith('/api/equipment/7/loans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(loan),
+        })
+    })
+
+    it('returnLoan sends a POST to the loan return URL', async () => {
+        mockResponse({ id: 10, returnedDate: '2026-11-24' })
+
+        await returnLoan(10)
+
+        expect(fetch).toHaveBeenCalledWith('/api/loans/10/return', { method: 'POST' })
+    })
+
     it('throws an error containing the status when the response is not ok', async () => {
         mockResponse(null, { ok: false, status: 404 })
 
         await expect(fetchEquipment()).rejects.toThrow('Request failed with status 404')
+    })
+
+    it('uses the server problem detail as the error message when one is returned', async () => {
+        mockResponse({ detail: 'Equipment 7 is already on loan' }, { ok: false, status: 409 })
+
+        await expect(borrowEquipment(7, { borrowerName: 'Ben', dueDate: '2099-12-01' }))
+            .rejects.toThrow('Equipment 7 is already on loan')
     })
 })

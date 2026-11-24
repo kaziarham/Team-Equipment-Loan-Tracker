@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import EquipmentList from './EquipmentList'
 
@@ -7,10 +7,10 @@ import EquipmentList from './EquipmentList'
  * Unit tests for the EquipmentList component
  */
 describe('EquipmentList', () => {
-    function renderList(items) {
+    function renderList(items, props = {}) {
         return render(
             <MemoryRouter>
-                <EquipmentList items={items} />
+                <EquipmentList items={items} {...props} />
             </MemoryRouter>
         )
     }
@@ -41,5 +41,39 @@ describe('EquipmentList', () => {
 
         const editLink = screen.getByRole('link', { name: 'Edit' })
         expect(editLink.getAttribute('href')).toBe('/equipment/5/edit')
+    })
+
+    it('offers Borrow for available items and Return for items on loan', () => {
+        const onReturn = vi.fn()
+        renderList([
+            { id: 1, name: 'Canon EOS R6', category: 'Camera', serialNumber: null, availability: 'AVAILABLE' },
+            { id: 2, name: 'Projector', category: 'AV', serialNumber: null, availability: 'OVERDUE', activeLoanId: 9 },
+        ], { onReturn })
+
+        expect(screen.getByRole('link', { name: 'Borrow' }).getAttribute('href')).toBe('/equipment/1/borrow')
+        expect(screen.getByText('Overdue')).toBeTruthy()
+
+        fireEvent.click(screen.getByRole('button', { name: 'Return' }))
+
+        expect(onReturn).toHaveBeenCalledWith(expect.objectContaining({ id: 2, activeLoanId: 9 }))
+    })
+
+    it('shows the borrower and due date for items on loan', () => {
+        renderList([
+            {
+                id: 7,
+                name: 'Dell XPS 13',
+                category: 'Laptop',
+                serialNumber: 'LAP-7',
+                availability: 'ON_LOAN',
+                activeLoanId: 3,
+                activeBorrowerName: 'Sam Lee',
+                activeDueDate: '2030-01-31'
+            }
+        ])
+
+        const row = screen.getAllByRole('row')[1]
+        expect(within(row).getByText('Borrowed by Sam Lee')).toBeTruthy()
+        expect(within(row).getByText('Due 2030-01-31')).toBeTruthy()
     })
 })

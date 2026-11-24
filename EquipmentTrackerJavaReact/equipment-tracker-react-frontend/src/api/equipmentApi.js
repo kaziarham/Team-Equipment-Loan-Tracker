@@ -4,7 +4,8 @@ async function request(url, options) {
     const response = await fetch(url, options)
 
     if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`)
+        const problem = await response.json().catch(() => ({}))
+        throw new Error(problem?.detail ?? `Request failed with status ${response.status}`)
     }
 
     return response.json()
@@ -30,4 +31,12 @@ export function createEquipment(equipment) {
 
 export function updateEquipment(id, equipment) {
     return request(`${baseUrl}/${id}`, sendJson('PUT', equipment))
+}
+
+export function borrowEquipment(equipmentId, loan) {
+    return request(`${baseUrl}/${equipmentId}/loans`, sendJson('POST', loan))
+}
+
+export function returnLoan(loanId) {
+    return request(`/api/loans/${loanId}/return`, { method: 'POST' })
 }

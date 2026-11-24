@@ -1,5 +1,6 @@
 package com.example.equipment_tracker.controller;
 
+import com.example.equipment_tracker.dto.EquipmentAvailability;
 import com.example.equipment_tracker.dto.EquipmentRequest;
 import com.example.equipment_tracker.dto.EquipmentResponse;
 import com.example.equipment_tracker.service.EquipmentService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,8 +28,8 @@ public class EquipmentController {
     }
 
     @GetMapping
-    public List<EquipmentResponse> list() {
-        return equipmentService.findAll();
+    public List<EquipmentResponse> list(@RequestParam(required = false) EquipmentAvailability availability) {
+        return equipmentService.findAll(availability);
     }
 
     @GetMapping("/{id}")

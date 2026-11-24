@@ -6,6 +6,7 @@ import com.example.equipment_tracker.dto.EquipmentRequest;
 import com.example.equipment_tracker.dto.EquipmentResponse;
 import com.example.equipment_tracker.entity.Equipment;
 import com.example.equipment_tracker.repository.EquipmentRepository;
+import com.example.equipment_tracker.repository.LoanRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.web.client.RestClient;
 
 /**
  * Integration tests for the Equipment API.
+ * This is for equipment against the PostgreSQL test database.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -30,11 +32,15 @@ class EquipmentApiIntegrationTests {
     @Autowired
     EquipmentRepository equipmentRepository;
 
+    @Autowired 
+    LoanRepository loanRepository;
+
     private RestClient client;
 
     @BeforeEach
     void setUp() {
         // Safe only because the test profile points at equipment_tracker_test.
+        loanRepository.deleteAll();
         equipmentRepository.deleteAll();
         client = RestClient.create("http://localhost:" + port);
     }
