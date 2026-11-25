@@ -14,11 +14,11 @@ function App() {
   const [actionError, setActionError] = useState('')
 
   const filters = [
-  { value: 'ALL', label: 'All' },
-  { value: 'AVAILABLE', label: 'Available' },
-  { value: 'ON_LOAN', label: 'On loan' },
-  { value: 'OVERDUE', label: 'Overdue' },
-]
+    { value: 'ALL', label: 'All' },
+    { value: 'AVAILABLE', label: 'Available' },
+    { value: 'ON_LOAN', label: 'On loan' },
+    { value: 'OVERDUE', label: 'Overdue' },
+  ]
 
   useEffect(() => {
     // Ignore results from a previous run (React StrictMode mounts twice in development).
