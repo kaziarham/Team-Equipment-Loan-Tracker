@@ -239,9 +239,11 @@ To see the new row, open the `equipment_tracker` database in [pgAdmin](https://w
 
 ### Running tests and checks
 
-From `equipment-tracker-java-backend`, with the `DB_*` variables set and the `equipment_tracker_test` database created:
+From `equipment-tracker-java-backend`, with the `equipment_tracker_test` database created. The test profile only sets the URL, so the username and password come from the same `DB_USERNAME` and `DB_PASSWORD` variables as the application:
 
 ```bash
+export DB_USERNAME=equipment_tracker
+export DB_PASSWORD='<your_password>'
 ./mvnw test
 ./mvnw verify
 ```
