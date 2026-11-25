@@ -97,6 +97,29 @@ public class LoanApiIntegrationTests {
     }
 
     @Test
+    void returningUnknownLoanReturnsNotFound() {
+        HttpStatusCode status = client.post().uri("/api/loans/{id}/return", 999_999L)
+            .exchange((request, response) -> response.getStatusCode());
+
+        assertThat(status).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void returningLoanTwiceReturnsConflict() {
+        LoanResponse loan = client.post().uri("/api/equipment/{id}/loans", equipmentId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new LoanRequest("Ana Pereira", LocalDate.now().plusDays(7)))
+            .retrieve()
+            .body(LoanResponse.class);
+        client.post().uri("/api/loans/{id}/return", loan.id()).retrieve().body(LoanResponse.class);
+
+        HttpStatusCode second = client.post().uri("/api/loans/{id}/return", loan.id())
+            .exchange((request, response) -> response.getStatusCode());
+
+        assertThat(second).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void rejectsDueDateInThePast() {
         HttpStatusCode status = client.post().uri("/api/equipment/{id}/loans", equipmentId)
             .contentType(MediaType.APPLICATION_JSON)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Link } from 'react-router-dom'
 import { fetchEquipment, createEquipment, updateEquipment, borrowEquipment, returnLoan } from './api/equipmentApi'
 import EquipmentList from './components/EquipmentList'
 import AddEquipmentPage from './pages/AddEquipmentPage'
@@ -102,6 +102,7 @@ function App() {
                       </button>
                     ))}
                   </div>
+                  <Link className="button" to="/equipment/new">Add equipment</Link>
                 </div>
                 {actionError && <p role="alert">{actionError}</p>}
                 <EquipmentList 

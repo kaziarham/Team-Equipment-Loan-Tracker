@@ -16,4 +16,15 @@ describe('EquipmentForm', () => {
         expect(screen.getByText('Category is required')).toBeTruthy()
         expect(onSubmit).not.toHaveBeenCalled()
     })
+
+    it('submits the entered values when the required fields are filled', () => {
+        const onSubmit = vi.fn()
+        render(<EquipmentForm submitting={false} onSubmit={onSubmit} onCancel={() => {}} />)
+
+        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Laptop' } })
+        fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Laptop' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: 'Laptop', category: 'Laptop' }))
+    })
 })

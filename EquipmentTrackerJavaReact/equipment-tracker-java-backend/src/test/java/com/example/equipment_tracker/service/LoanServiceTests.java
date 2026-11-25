@@ -66,6 +66,15 @@ class LoanServiceTests {
     }
 
     @Test
+    void borrowReturnsNotFoundForUnknownEquipment() {
+        when(equipmentRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.borrow(99L, new LoanRequest("Ben Okafor", TODAY.plusDays(3))))
+            .isInstanceOf(EquipmentNotFoundException.class);
+        verify(loanRepository, never()).saveAndFlush(any(Loan.class));
+    }
+
+    @Test
     void borrowMapsActiveLoansConstraintViolationToConflict() {
         when(equipmentRepository.findById(1L)).thenReturn(Optional.of(withId(new Equipment("Camera", "Camera", null), 1L)));
         when(loanRepository.saveAndFlush(any(Loan.class))).thenThrow(new DataIntegrityViolationException("insert failed", 
@@ -94,6 +103,14 @@ class LoanServiceTests {
 
         assertThatThrownBy(() -> service.returnLoan(10L))
             .isInstanceOf(LoanConflictException.class);
+    }
+
+    @Test
+    void returnReportsNotFoundForUnknownLoan() {
+        when(loanRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.returnLoan(99L))
+            .isInstanceOf(LoanNotFoundException.class);
     }
 
     @Test

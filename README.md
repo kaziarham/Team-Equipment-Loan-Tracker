@@ -119,6 +119,10 @@ dotnet test
 
 - There is no delete for equipment or loans.
 - "Today" is the API's UTC date, so the Web's due-date message may differ from your local date near midnight.
+- There is no authentication or authorisation, so anyone who can reach the API can change equipment and loans.
+- The equipment list is not paged. Every item is returned in one response.
+- A loan can't be edited. To change the due date or borrower, return the item and borrow it again.
+- The Blazor pages are not unit-tested. The Web test project covers only the API client, and the pages are checked in the browser demo.
 
 ## Java + React version
 
@@ -253,3 +257,25 @@ npm run build
 ```
 
 `npm run test` runs the Vitest suite in a jsdom environment. The tests mock the API with `fetch`, so they don't need the backend running.
+
+### Demo walkthrough
+
+The seed migration (`V3`) gives you four items: Canon EOS R6 and Rode VideoMic Pro are overdue, Dell XPS 13 is on loan to Sam Lee, and Logitech Brio is available. Start both applications, then open `http://localhost:5173`.
+
+1. Click **Add equipment**, enter a name, category and optional serial number, and save. The new item appears in the list as Available.
+2. Click **Borrow** on the new item, enter a borrower name and a due date that isn't in the past, and submit. The item shows as On loan with the borrower and due date.
+3. Borrow the same item again from the browser or with `curl`. You should get a clear "already on loan" message. The API returns `409 Conflict`.
+4. Click **Return** on the item. It becomes Available again.
+5. Click the **Overdue** filter. The Canon EOS R6 and Rode VideoMic Pro appear, since their due dates were in October and November 2026. The Dell XPS 13 does not, since its due date is in 2030.
+6. Stop both applications, start them again, and check that your new item and loan are still there. The PostgreSQL data persists, and Flyway doesn't reseed existing data.
+7. From `equipment-tracker-java-backend`, run `./mvnw verify`.
+
+If the overdue items don't show as overdue, check the dates in `V3__seed_demo_equipment_and_loans.sql`. Those due dates are fixed, so they become overdue only while today is after them.
+
+### Known limitations
+
+- There is no delete for equipment or loans, and no way to edit an existing loan's due date or borrower.
+- There is no login or user accounts. Any user of the app can borrow or return any item.
+- Filtering runs in the browser on the full equipment list. It is fine for a small team, but there is no pagination.
+- "Today" on the backend uses the server's default time zone. The borrow form uses the browser's local date for its past-date check, so the two can disagree near midnight.
+- Demo data comes from a Flyway migration that runs once. Deleting a seeded row in the application database won't bring it back on its own.

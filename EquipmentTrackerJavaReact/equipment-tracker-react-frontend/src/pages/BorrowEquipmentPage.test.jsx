@@ -41,4 +41,15 @@ describe('BorrowEquipmentPage', () => {
         expect(screen.getByText('Due date cannot be in the past')).toBeTruthy()
         expect(onBorrow).not.toHaveBeenCalled()
     })
+
+    it('shows the server message when borrowing fails', async () => {
+        const onBorrow = vi.fn().mockRejectedValue(new Error('Equipment 1 is already on loan'))
+        renderPage(onBorrow)
+
+        fireEvent.change(screen.getByLabelText('Borrower name'), { target: { value: 'Ben Okafor' } })
+        fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '2099-12-01' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Borrow' }))
+
+        expect(await screen.findByText('Could not borrow equipment: Equipment 1 is already on loan')).toBeTruthy()
+    })
 })

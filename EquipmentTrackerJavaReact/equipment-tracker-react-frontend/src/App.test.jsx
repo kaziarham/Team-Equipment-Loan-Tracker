@@ -164,4 +164,26 @@ describe('App equipment list', () => {
         expect(await within(await screen.findByRole('table')).findByText('Available')).toBeTruthy()
         expect(fetchMock).toHaveBeenCalledWith('/api/loans/7/return', expect.objectContaining({ method: 'POST' }))
     })
+
+    it('shows the server message when returning an item fails', async () => {
+        vi.stubGlobal('fetch', vi.fn((url, options) => {
+            if (options?.method === 'POST') {
+                return Promise.resolve({ ok: false, status: 409, json: async () => ({ detail: 'Loan 7 was already returned' }) })
+            }
+            return Promise.resolve({
+                ok: true,
+                json: async () => [{ id: 1, name: 'Canon EOS R6', category: 'Camera', serialNumber: null, availability: 'ON_LOAN', activeLoanId: 7 }],
+            })
+        }))
+
+        render(
+            <MemoryRouter>
+                <App />
+            </MemoryRouter>
+        )
+
+        fireEvent.click(await screen.findByRole('button', { name: 'Return' }))
+
+        expect(await screen.findByText('Could not return Canon EOS R6: Loan 7 was already returned')).toBeTruthy()
+    })
 })
